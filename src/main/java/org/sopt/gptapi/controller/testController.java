@@ -2,10 +2,12 @@ package org.sopt.gptapi.controller;
 
 
 import com.google.common.util.concurrent.RateLimiter;
+import io.github.flashvayne.chatgpt.dto.ChatRequest;
 import io.github.flashvayne.chatgpt.service.ChatgptService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.sopt.gptapi.common.dto.ErrorMessage;
+import org.sopt.gptapi.dto.UserRequest;
 import org.sopt.gptapi.service.ChatService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,10 +28,14 @@ public class testController {
     private final RateLimiter rateLimiter = RateLimiter.create(1.0);
 
     @PostMapping("chat-gpt")
-    public String test(@RequestBody String question) {
+    public String handleChatRequest(
+        @RequestBody UserRequest userRequest
+    )
+    {
+        String content = userRequest.getContent();
         // 요청 빈도 조절
         if (rateLimiter.tryAcquire()) {
-            return chatService.getChatResponse(question);
+            return chatService.processChatRequest(content);
         } else {
             return ErrorMessage.TOO_MANY_REQUEST.getMessage();
         }

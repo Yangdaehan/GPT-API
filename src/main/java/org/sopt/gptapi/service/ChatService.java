@@ -1,5 +1,6 @@
 package org.sopt.gptapi.service;
 
+import com.google.common.util.concurrent.RateLimiter;
 import io.github.flashvayne.chatgpt.service.ChatgptService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -17,10 +18,9 @@ public class ChatService {
     private final ChatgptService chatgptService;
 
     @Cacheable("chatResponses")
-    public String getChatResponse(String prompt) {
+    public String getChatResponse(String content) {
         try {
-            String message = prompt + " 오늘 있었던 일에 대해서 칭찬을 해줘.";
-            return chatgptService.sendMessage(message);
+            return chatgptService.sendMessage(content);
         } catch (HttpClientErrorException.BadRequest e) {
 
             log.error("Bad request error: {}", e.getMessage());
@@ -30,6 +30,16 @@ public class ChatService {
             log.error("General error: {}", e.getMessage());
             return ErrorMessage.GENERAL_ERROR.getMessage();
         }
+    }
+
+    public String processChatRequest(String content) {
+        String translationPrompt = "다음에 나오는 문장들을 영어로 번역해줘 [ " + content + "]";
+        String translatedText = getChatResponse(translationPrompt);
+        System.out.println(translatedText);
+        String complimentPrompt = "Give a compliment on the following on the following event in Korean [   " + translationPrompt + "]";
+        System.out.println(complimentPrompt);
+
+        return getChatResponse(complimentPrompt);
     }
 
 }
