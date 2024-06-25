@@ -14,32 +14,35 @@ import org.springframework.web.client.HttpClientErrorException;
 @Service
 public class ChatService {
 
-    private static final Logger log = LoggerFactory.getLogger(ChatService.class);
     private final ChatgptService chatgptService;
 
-    @Cacheable("chatResponses")
+    // 초당 1개의 요청만 허용
+    private final RateLimiter rateLimiter = RateLimiter.create(1.0);
+
+
     public String getChatResponse(String content) {
         try {
             return chatgptService.sendMessage(content);
         } catch (HttpClientErrorException.BadRequest e) {
-
-            log.error("Bad request error: {}", e.getMessage());
             return ErrorMessage.BAD_REQUEST.getMessage();
         } catch (Exception e) {
-
-            log.error("General error: {}", e.getMessage());
             return ErrorMessage.GENERAL_ERROR.getMessage();
         }
     }
 
     public String processChatRequest(String content) {
-        String translationPrompt = "다음에 나오는 문장들을 영어로 번역해줘 [ " + content + "]";
-        String translatedText = getChatResponse(translationPrompt);
-        System.out.println(translatedText);
-        String complimentPrompt = "Give a compliment on the following on the following event in Korean [   " + translationPrompt + "]";
-        System.out.println(complimentPrompt);
+        if (rateLimiter.tryAcquire()) {
+            String translationPrompt = "다음에 나오는 문장들을 영어로 번역해줘 [ " + content + "]";
+            String translatedText = getChatResponse(translationPrompt);
+            String complimentPrompt =
+                "Give a long compliment on the following on the following event in Korean [   "
+                    + translatedText + "]";
 
-        return getChatResponse(complimentPrompt);
+            return getChatResponse(complimentPrompt);
+        }else {
+            return ErrorMessage.TOO_MANY_REQUEST.getMessage();
+        }
+
     }
 
 }

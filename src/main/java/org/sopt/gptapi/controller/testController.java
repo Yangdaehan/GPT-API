@@ -22,10 +22,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class testController {
 
     private final ChatService chatService;
-    private final ChatgptService chatgptService;
-
-    // 초당 1개의 요청만 허용
-    private final RateLimiter rateLimiter = RateLimiter.create(1.0);
 
     @PostMapping("chat-gpt")
     public String handleChatRequest(
@@ -33,11 +29,12 @@ public class testController {
     )
     {
         String content = userRequest.getContent();
-        // 요청 빈도 조절
-        if (rateLimiter.tryAcquire()) {
+        try {
             return chatService.processChatRequest(content);
-        } else {
-            return ErrorMessage.TOO_MANY_REQUEST.getMessage();
+        } catch (Exception e) {
+            log.error("Error during processing: {}", e.getMessage());
+            return "An error occured. Please try again.";
         }
+
     }
 }
