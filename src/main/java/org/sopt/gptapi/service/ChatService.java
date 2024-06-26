@@ -3,6 +3,7 @@ package org.sopt.gptapi.service;
 import io.github.flashvayne.chatgpt.service.ChatgptService;
 import lombok.RequiredArgsConstructor;
 import org.sopt.gptapi.common.dto.ErrorMessage;
+import org.sopt.gptapi.common.dto.Prompt;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 
@@ -16,7 +17,7 @@ public class ChatService {
     public String getChatResponse(String content) {
         try {
 
-            String message = "[" + content + "] 오늘 있었던 감사한 일에 대해 작성했어. 이를 보고 칭찬해줘.";
+            String message = Prompt.MESSAGE.getMessage() + content + "\n칭찬 :";
 
             return chatgptService.sendMessage(message);
         } catch (HttpClientErrorException.BadRequest e) {
