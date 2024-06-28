@@ -1,11 +1,8 @@
 package org.sopt.gptapi.controller;
 
 
-import com.google.common.util.concurrent.RateLimiter;
-import io.github.flashvayne.chatgpt.service.ChatgptService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.sopt.gptapi.common.dto.ErrorMessage;
 import org.sopt.gptapi.dto.UserRequest;
 import org.sopt.gptapi.service.ChatService;
 import org.springframework.web.bind.annotation.PostMapping;
