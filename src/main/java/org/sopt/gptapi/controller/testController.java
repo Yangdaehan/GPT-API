@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.sopt.gptapi.dto.UserRequest;
 import org.sopt.gptapi.service.ChatService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,12 +21,15 @@ public class testController {
     private final ChatService chatService;
 
     @PostMapping("chat-gpt")
-    public Mono<String> handleChatRequest(
-        @RequestBody UserRequest userRequest
-    ) {
+    public Mono<ResponseEntity<String>> handleChatRequest(@RequestBody UserRequest userRequest) {
         String content = userRequest.getContent();
         return chatService.getChatResponse(content)
-            .doOnError(e -> log.error("Error during processing: {}", e.getMessage()))
-            .onErrorReturn("An error has occurred. Please try again.");
+            .map(ResponseEntity::ok)
+            .doOnError(e -> {
+                log.error("Error during processing: {}", e.getMessage());
+            })
+            .onErrorResume(e -> {
+                return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error has occurred. Please try again."));
+            });
     }
 }
