@@ -1,7 +1,5 @@
 package org.sopt.gptapi.config;
 
-import io.github.flashvayne.chatgpt.dto.ChatRequest;
-import io.github.flashvayne.chatgpt.dto.ChatResponse;
 import io.github.flashvayne.chatgpt.dto.chat.MultiChatMessage;
 import io.github.flashvayne.chatgpt.dto.chat.MultiChatRequest;
 import io.github.flashvayne.chatgpt.dto.chat.MultiChatResponse;
@@ -14,9 +12,12 @@ import org.sopt.gptapi.service.AsyncChatgptService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
@@ -40,35 +41,39 @@ public class AsyncChatgptServiceImpl implements AsyncChatgptService {
 
     @Override
     public Mono<String> sendMessage(String message) {
-        ChatRequest chatRequest = new ChatRequest(
+        List<MultiChatMessage> messages = new ArrayList<>();
+        messages.add(new MultiChatMessage("user", message));
+
+        MultiChatRequest multiChatRequest = new MultiChatRequest(
             this.chatgptProperties.getModel(),
-            message,
+            messages,
             this.chatgptProperties.getMaxTokens(),
             this.chatgptProperties.getTemperature(),
             this.chatgptProperties.getTopP()
         );
-        return sendChatRequest(chatRequest)
-            .map(chatResponse -> chatResponse.getChoices().get(0).getText());
+        return sendChatRequest(multiChatRequest)
+            .map(multiChatResponse -> multiChatResponse.getChoices().get(0).getMessage().getContent());
     }
 
     @Override
-    public Mono<ChatResponse> sendChatRequest(ChatRequest chatRequest) {
+    public Mono<MultiChatResponse> sendChatRequest(MultiChatRequest multiChatRequest) {
         return webClient.post()
             .uri(chatgptProperties.getUrl())
-            .body(BodyInserters.fromValue(chatRequest))
+            .body(BodyInserters.fromValue(multiChatRequest))
             .retrieve()
-            .bodyToMono(ChatResponse.class)
+            .onStatus(HttpStatusCode::is4xxClientError, this::handleError)
+            .bodyToMono(MultiChatResponse.class)
             .doOnError(e -> log.error("Error during chat request", e));
     }
 
     @Override
     public Mono<String> multiChat(List<MultiChatMessage> messages) {
         MultiChatRequest multiChatRequest = new MultiChatRequest(
-            this.chatgptProperties.getMulti().getModel(),
+            this.chatgptProperties.getModel(),
             messages,
-            this.chatgptProperties.getMulti().getMaxTokens(),
-            this.chatgptProperties.getMulti().getTemperature(),
-            this.chatgptProperties.getMulti().getTopP()
+            this.chatgptProperties.getMaxTokens(),
+            this.chatgptProperties.getTemperature(),
+            this.chatgptProperties.getTopP()
         );
         return multiChatRequest(multiChatRequest)
             .map(multiChatResponse -> multiChatResponse.getChoices().get(0).getMessage().getContent());
@@ -77,9 +82,10 @@ public class AsyncChatgptServiceImpl implements AsyncChatgptService {
     @Override
     public Mono<MultiChatResponse> multiChatRequest(MultiChatRequest multiChatRequest) {
         return webClient.post()
-            .uri(chatgptProperties.getMulti().getUrl())
+            .uri(chatgptProperties.getUrl())
             .body(BodyInserters.fromValue(multiChatRequest))
             .retrieve()
+            .onStatus(HttpStatusCode::is4xxClientError, this::handleError)
             .bodyToMono(MultiChatResponse.class)
             .doOnError(e -> log.error("Error during multi chat request", e));
     }
@@ -114,7 +120,24 @@ public class AsyncChatgptServiceImpl implements AsyncChatgptService {
             .uri(chatgptProperties.getImage().getUrl())
             .body(BodyInserters.fromValue(imageRequest))
             .retrieve()
+            .onStatus(HttpStatusCode::is4xxClientError, this::handleError)
             .bodyToMono(ImageResponse.class)
             .doOnError(e -> log.error("Error during image generate request", e));
+    }
+
+    private Mono<Throwable> handleError(ClientResponse response) {
+        if (response.statusCode() == HttpStatus.UNAUTHORIZED) {
+            return response.bodyToMono(String.class)
+                .flatMap(errorBody -> {
+                    log.error("401 Unauthorized error: {}", errorBody);
+                    return Mono.error(new RuntimeException("401 Unauthorized error: " + errorBody));
+                });
+        } else {
+            return response.bodyToMono(String.class)
+                .flatMap(errorBody -> {
+                    log.error("Client error: {} {}", response.statusCode(), errorBody);
+                    return Mono.error(new RuntimeException("Client error: " + response.statusCode() + " " + errorBody));
+                });
+        }
     }
 }

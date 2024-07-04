@@ -15,7 +15,7 @@ import java.util.List;
 
 public interface AsyncChatgptService {
     Mono<String> sendMessage(String message);
-    Mono<ChatResponse> sendChatRequest(ChatRequest chatRequest);
+    Mono<MultiChatResponse> sendChatRequest(MultiChatRequest multiChatRequest);
     Mono<String> multiChat(List<MultiChatMessage> messages);
     Mono<MultiChatResponse> multiChatRequest(MultiChatRequest multiChatRequest);
     Mono<String> imageGenerate(String prompt);
