@@ -1,7 +1,6 @@
 # GPT-API
 
 ## 브랜치 설명
-Feat/#1 => 영어로 번역한 후 gpt에 되묻기 (성능 확인)
+Feat/#2 => Few shot skill을 이용해서 칭찬의 예시를 함께 보낸다.
 
-flow ->
-<img width="1468" alt="스크린샷 2024-06-26 오후 11 33 24" src="https://github.com/Yangdaehan/GPT-API/assets/68599095/52bcf978-464a-42b8-9157-d06137aa99f0">
+https://github.com/Yangdaehan/GPT-API/blob/9cd115554ea47c76ade6bd45a4d3189c64c639fb/src/main/java/org/sopt/gptapi/common/dto/Prompt.java#L4-L31
