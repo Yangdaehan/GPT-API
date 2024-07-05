@@ -12,14 +12,18 @@ import org.sopt.gptapi.service.AsyncChatgptService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
+
 @Service
 public class AsyncChatgptServiceImpl implements AsyncChatgptService {
     private static final Logger log = LoggerFactory.getLogger(AsyncChatgptServiceImpl.class);
@@ -57,6 +61,7 @@ public class AsyncChatgptServiceImpl implements AsyncChatgptService {
             .uri(chatgptProperties.getUrl())
             .body(BodyInserters.fromValue(multiChatRequest))
             .retrieve()
+            .onStatus(HttpStatusCode::is4xxClientError, this::handleError)
             .bodyToMono(MultiChatResponse.class)
             .doOnError(e -> log.error("Error during chat request", e));
     }
@@ -80,6 +85,7 @@ public class AsyncChatgptServiceImpl implements AsyncChatgptService {
             .uri(chatgptProperties.getUrl())
             .body(BodyInserters.fromValue(multiChatRequest))
             .retrieve()
+            .onStatus(HttpStatusCode::is4xxClientError, this::handleError)
             .bodyToMono(MultiChatResponse.class)
             .doOnError(e -> log.error("Error during multi chat request", e));
     }
@@ -114,7 +120,24 @@ public class AsyncChatgptServiceImpl implements AsyncChatgptService {
             .uri(chatgptProperties.getImage().getUrl())
             .body(BodyInserters.fromValue(imageRequest))
             .retrieve()
+            .onStatus(HttpStatusCode::is4xxClientError, this::handleError)
             .bodyToMono(ImageResponse.class)
             .doOnError(e -> log.error("Error during image generate request", e));
+    }
+
+    private Mono<Throwable> handleError(ClientResponse response) {
+        if (response.statusCode() == HttpStatus.UNAUTHORIZED) {
+            return response.bodyToMono(String.class)
+                .flatMap(errorBody -> {
+                    log.error("401 Unauthorized error: {}", errorBody);
+                    return Mono.error(new RuntimeException("401 Unauthorized error: " + errorBody));
+                });
+        } else {
+            return response.bodyToMono(String.class)
+                .flatMap(errorBody -> {
+                    log.error("Client error: {} {}", response.statusCode(), errorBody);
+                    return Mono.error(new RuntimeException("Client error: " + response.statusCode() + " " + errorBody));
+                });
+        }
     }
 }
