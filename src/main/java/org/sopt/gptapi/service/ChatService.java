@@ -1,6 +1,5 @@
 package org.sopt.gptapi.service;
 
-import io.github.flashvayne.chatgpt.service.ChatgptService;
 import lombok.RequiredArgsConstructor;
 import org.sopt.gptapi.common.dto.ErrorMessage;
 import org.sopt.gptapi.common.dto.Prompt;
@@ -9,9 +8,11 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 @RequiredArgsConstructor
 @Service
 public class ChatService {
+
 
     private final ChatgptService chatgptService;
     private static final Logger logger = LoggerFactory.getLogger(ChatService.class);
@@ -30,5 +31,6 @@ public class ChatService {
             logger.error("General error", e);
             return ErrorMessage.GENERAL_ERROR.getMessage();
         }
+
     }
 }
