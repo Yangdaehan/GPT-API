@@ -15,10 +15,13 @@ import reactor.core.publisher.Mono;
 @Service
 public class ChatService {
 
+    private static final Logger logger = LoggerFactory.getLogger(ChatService.class);
+
     private final AsyncChatgptService asyncChatgptService;
 
     BadWordFiltering filtering = new BadWordFiltering();
-    private static final Logger logger = LoggerFactory.getLogger(ChatService.class);
+
+
 
 
     public Mono<String> getChatResponse(String content) {
