@@ -7,4 +7,5 @@
 * Feat/#5 => GPT 4.0으로 변경
 * Feat/#6 => #5(GPT4.0)로 부터 branch 생성. #2의 Few shot skill을 적용해서 여러 감사일기에도 독립된 칭찬이 나오게 구현
 * Feat/#8 => #3(WebClient)로 부터 branch 생성. 비속어 필터링 구현
-* Feat/#9 => #8(비속어 필터링)로 부터 branch 생성. AMQP 구현을 위한 RabbitMQ 적용 (구현 중) 
+* Feat/#9 => #8(비속어 필터링)로 부터 branch 생성. AMQP 구현을 위한 RabbitMQ 적용 (구현 잠시 멈춤)
+* Feat/#10 => #8(비속어 필터링)로 부터 branch 생성. Postgresql 데이터베이스에 칭찬 저장 (비속어 필터링 백엔드에서 구현할 예정이여서 해당 기능 삭제 필요)
