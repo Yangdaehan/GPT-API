@@ -39,7 +39,7 @@ public class AsyncChatgptServiceImpl implements AsyncChatgptService {
             .build();
     }
 
-    @Override
+    /*@Override
     public Mono<String> sendMessage(String message) {
         ChatRequest chatRequest = new ChatRequest(
             this.chatgptProperties.getModel(),
@@ -51,13 +51,23 @@ public class AsyncChatgptServiceImpl implements AsyncChatgptService {
         log.info("Sending chat message : {}", message);
         return sendChatRequest(chatRequest)
             .map(chatResponse -> chatResponse.getChoices().get(0).getText());
+    }*/
+    @Override
+    public Mono<String> sendMessage(String message) {
+        List<MultiChatMessage> messages = new ArrayList<>();
+        messages.add(new MultiChatMessage("user",message));
+        MultiChatRequest multiChatRequest = new MultiChatRequest(
+        );
+        log.info("Sending chat message : {}", message);
+        return sendChatRequest(multiChatRequest)
+            .map(chatResponse -> chatResponse.getChoices().get(0).getText());
     }
 
     @Override
-    public Mono<ChatResponse> sendChatRequest(ChatRequest chatRequest) {
+    public Mono<ChatResponse> sendChatRequest(MultiChatRequest multiChatRequest) {
         return webClient.post()
             .uri(chatgptProperties.getUrl())
-            .body(BodyInserters.fromValue(chatRequest))
+            .body(BodyInserters.fromValue(multiChatRequest))
             .retrieve()
             .bodyToMono(ChatResponse.class)
             .doOnError(e -> log.error("Error during chat request", e));

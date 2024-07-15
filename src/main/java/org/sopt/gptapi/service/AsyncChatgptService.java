@@ -14,7 +14,7 @@ import reactor.core.publisher.Mono;
 
 public interface AsyncChatgptService {
     Mono<String> sendMessage(String message);
-    Mono<ChatResponse> sendChatRequest(ChatRequest chatRequest);
+    Mono<ChatResponse> sendChatRequest(MultiChatRequest multiChatRequest);
     Mono<String> multiChat(List<MultiChatMessage> messages);
     Mono<MultiChatResponse> multiChatRequest(MultiChatRequest multiChatRequest);
     Mono<String> imageGenerate(String prompt);
