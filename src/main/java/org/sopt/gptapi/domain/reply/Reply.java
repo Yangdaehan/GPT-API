@@ -1,33 +1,53 @@
 package org.sopt.gptapi.domain.reply;
 
-import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.sopt.gptapi.domain.user.User;
-
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
-@Entity
+
 @Getter
-@Setter
 @NoArgsConstructor
-@Table(name = "replies")
+@AllArgsConstructor
+@Table("replies")
 public class Reply {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "content")
     private String content;
 
-    @Column(name = "is_read")
+    @Column("is_read")
     private Boolean isRead;
 
-    @Column(name = "created_date")
-    private LocalDateTime createdDate;
+    @Column("diary_created_date")
+    private LocalDateTime diaryCreatedDate;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
+    private Long userId;
+
+    @Column("created_at")
+    private LocalDateTime createdAt;
+
+    @Column("updated_at")
+    private LocalDateTime updatedAt;
+
+    public Reply( String content, Boolean isRead, LocalDateTime diaryCreatedDate, Long userId,
+        LocalDateTime createdAt, LocalDateTime updatedAt) {
+        this.id = null;
+        this.content = content;
+        this.isRead = isRead;
+        this.diaryCreatedDate = diaryCreatedDate;
+        this.userId = userId;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
+
+    @Builder
+    public static Reply createDiary(String content, Boolean isRead, LocalDateTime createdDate, Long userId) {
+        return new Reply(null,content, isRead, createdDate, userId, LocalDateTime.now(), LocalDateTime.now());
+    }
 }

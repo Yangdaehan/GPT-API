@@ -1,22 +1,37 @@
 package org.sopt.gptapi.domain.user;
 
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
-@Entity
 @Getter
 @NoArgsConstructor
-@Table(name = "users")
+@AllArgsConstructor
+@Table("users")
 public class User {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String platformID;
 
+    private String platform;
+
+    private String email;
+
+    private String nickName;
+
+    private boolean isDeleted;
+
+    @Builder
+    public User(String platformID, String platform, String email, String nickName, boolean isDeleted) {
+        this.platformID = platformID;
+        this.platform = platform;
+        this.email = email;
+        this.nickName = nickName;
+        this.isDeleted = isDeleted;
+    }
 }
