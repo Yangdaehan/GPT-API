@@ -1,5 +1,7 @@
-## GPT-API 브랜치 설명
-기능 별로 브랜치를 나눴고, 가장 성능이 좋은 방법을 사용할 예정입니다.
+## Feat/#10 브랜치 설명
 
-* Feat/#1 => 영어로 번역한 후 gpt에 되묻기 (성능 확인)
-* Feat/#2 => Few shot skill을 이용해서 gpt에 요청할 때 칭찬의 예시도 함께 보낸다.
+Redis에서 특정 키가 만료되었을 때 메시지를 수신하게 설정. Redis 락을 사용하여 동시성 문제를 해결하고 작업을 수행한다.
+https://github.com/Yangdaehan/GPT-API/blob/3a677f9ca815184397c87835e104821623ef44df/src/main/java/org/sopt/gptapi/listener/RedisMessageListener.java#L29-L54
+
+출력된 칭찬을 Postgresql 데이터베이스 내에 USER_ID를 조회하여 저장
+https://github.com/Yangdaehan/GPT-API/blob/3a677f9ca815184397c87835e104821623ef44df/src/main/java/org/sopt/gptapi/service/ChatService.java#L50-L57
